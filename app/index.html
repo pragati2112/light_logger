@@ -25,7 +25,7 @@
 
     </div>
 
-    <div v-if="logs.length>0">
+    <div v-if="logs.length>0 && is_data_ready">
 
         <p>Logs for -
             <u><b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b></u>
@@ -38,14 +38,14 @@
     </div>
 
 
-    <div v-if="logs.length>0" style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
+    <div v-if="is_data_ready" style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
 
         <button v-if="page_number>1" type="button" style="padding: 0.4rem; margin-right: 1rem;
             align-content: center"
             @click="loadMore(prev=true)">Previous
         </button>
 
-        <button  type="button" style="padding: 0.4rem; margin-right: 1rem;
+        <button type="button" style="padding: 0.4rem; margin-right: 1rem;
             align-content: center"
             @click="loadMore(prev=false)">Next page
         </button>
@@ -54,7 +54,7 @@
 
     </div>
 
-    <div v-else style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
+    <div v-if="is_data_ready && logs.length===0" style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
         No records found for <b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b>
     </div>
 
@@ -73,7 +73,8 @@
         per_page:50,
         logs:[],
         start_date:new Date(),
-        end_date:new Date()
+        end_date:new Date(),
+        is_data_ready:false
       }
     },
 
@@ -87,6 +88,7 @@
             self.logs = resp.logs
             self.page_number = resp.page_no
             self.per_page = resp.per_page
+            self.is_data_ready = true
         }
 
         this.connection.onopen = function(event) {
@@ -135,13 +137,7 @@
             this.start_date=new Date()
             this.end_date = new Date()
             this.page_number= 1
-            let data = {
-                start_date: this.formattedDate(this.start_date),
-                end_date: this.formattedDate(this.end_date),
-                per_page:50,
-                page_no:this.page_number
-            }
-            this.connection.send(JSON.stringify(data))
+            // this.connection.send(JSON.stringify(data))
         },
 
     }

@@ -47,9 +47,8 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            logs = await read_logs_from_files(data['start_date'], data['end_date'], data['per_page'])
-            for log in logs:
-                await manager.send_personal_message(log, websocket)
+            logs = await read_logs_from_files(data['start_date'], data['end_date'], data['per_page'], data['page_no'])
+            await manager.send_personal_message(logs, websocket)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

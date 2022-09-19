@@ -4,15 +4,39 @@
     <p style=" font-size: 3rem; text-align: center;">{{ message }}</p>
     <br>
     <div style="text-align: center; ">
-        <button type="button" style="padding: 0.6rem;
+        <button type="button" style="padding: 0.1rem;
             align-content: center"
             @click="fetchLogs">Show latest logs
         </button>
+        &nbsp;
+
+        <input type="date" v-model="start_date" name="Start date">
+        &nbsp;
+        <input type="date" v-model="end_date"  name="End date">
+        &nbsp;
+        <input type="submit" @click="fetchLogs">
+
+        &nbsp;
+        <button type="button" style="padding: 0.1rem;
+            align-content: center"
+            @click="resetFilters">Reset
+        </button>
+
+
     </div>
 
-    <div v-if="logs.length>0" v-for="(log,idx) in logs">
-        {{log}}
+    <div v-if="logs.length>0">
+
+        <p>Logs for -
+            <u><b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b></u>
+            (Latest first)
+        </p>
+
+        <div  v-for="(log,idx) in logs">
+            {{log}}
+        </div>
     </div>
+
 
     <div v-if="logs.length>0" style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
 
@@ -30,6 +54,11 @@
 
     </div>
 
+    <div v-else style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
+        No records found for <b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b>
+    </div>
+
+
 </div>
 
 <script>
@@ -42,7 +71,9 @@
         connection: null,
         page_number:1,
         per_page:50,
-        logs:[]
+        logs:[],
+        start_date:new Date(),
+        end_date:new Date()
       }
     },
 
@@ -65,10 +96,19 @@
     },
 
     methods:{
+
+        formattedDate:function(d){
+            let date = new Date(d)
+            let year = date.toLocaleDateString("default", { year: "numeric" });
+            let month = date.toLocaleDateString("default", { month: "2-digit" });
+            let day = date.toLocaleDateString("default", { day: "2-digit" });
+            return year + "-" + month + "-" + day
+        },
+
         fetchLogs: function (){
             let data = {
-                start_date:'',
-                end_date:'',
+                start_date: this.formattedDate(this.start_date),
+                end_date: this.formattedDate(this.end_date),
                 per_page:50,
                 page_no:this.page_number
             }
@@ -83,13 +123,26 @@
                 page = this.page_number+1
             }
             let data = {
-                start_date:'',
-                end_date:'',
+                start_date: this.formattedDate(this.start_date),
+                end_date: this.formattedDate(this.end_date),
                 per_page:50,
                 page_no:page
             }
             this.connection.send(JSON.stringify(data))
-        }
+        },
+
+        resetFilters: function (){
+            this.start_date=new Date()
+            this.end_date = new Date()
+            this.page_number= 1
+            let data = {
+                start_date: this.formattedDate(this.start_date),
+                end_date: this.formattedDate(this.end_date),
+                per_page:50,
+                page_no:this.page_number
+            }
+            this.connection.send(JSON.stringify(data))
+        },
 
     }
 

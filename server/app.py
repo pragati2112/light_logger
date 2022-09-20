@@ -2,7 +2,7 @@ from fastapi import WebSocket, WebSocketDisconnect, FastAPI
 from fastapi.requests import Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
-from server.singletons.webSocketConnectionManager import WebSocketConnectionManager
+from server.singletons.webSocketConnectionManager import WebSocketConnectionManager, ManageLogs
 from server.routes import router as logs_router
 import logging
 import traceback
@@ -46,17 +46,15 @@ async def websocket_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            data = await websocket.receive_json()
-            manager.page_number += 1
-            logs = await read_logs_from_files(data['start_date'], data['end_date'],
-                                              data['per_page'], manager.page_number)
+            for conn in manager.active_connections:
+                if conn['websocket'] == websocket:
+                    conn['page_number'] += 1
 
-            if len(logs) == 0:
-                await manager.send_personal_message(f"No logs found for {data['start_date']} - {data['end_date']}",
-                                                    websocket, manager.page_number)
-            else:
-                for log in logs:
-                    await manager.send_personal_message(log, websocket, manager.page_number)
+                    data = await websocket.receive_json()
+                    logs = await read_logs_from_files(data['start_date'], data['end_date'],
+                                                      data['per_page'], conn['page_number'])
+                    for log in logs:
+                        await manager.send_personal_message(log, conn)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

@@ -1,7 +1,5 @@
-import bisect
-import json
-import re
 import datetime
+import re
 
 log_file_path = '/var/log/dpkg.log'
 regex = r"([0-9]{4}-[0-9]{2}-[0-9]{2})"

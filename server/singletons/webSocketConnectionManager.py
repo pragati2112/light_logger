@@ -1,4 +1,3 @@
-from collections import OrderedDict
 from typing import List
 from fastapi import WebSocket
 
@@ -34,8 +33,6 @@ class WebSocketConnectionManager:
         _conn_dict.websocket_dict['websocket'] = websocket
         _conn_dict.websocket_dict['page_number'] = 0
         self.active_connections.append(_conn_dict)
-
-        print(_conn_dict.websocket_dict, '#############')
 
     def disconnect(self, websocket: WebSocket):
         for connection in self.active_connections:

@@ -9,6 +9,7 @@ class WebSocketConnectionManager:
         if WebSocketConnectionManager.__instance__ is None:
             WebSocketConnectionManager.__instance__ = self
             self.active_connections: List[WebSocket] = []
+            self.page_number: int = 0
 
         else:
             raise Exception("only one instance of connection manager can be created")
@@ -16,11 +17,13 @@ class WebSocketConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.active_connections.append(websocket)
+        self.page_number = 0
 
     def disconnect(self, websocket: WebSocket):
         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
+    async def send_personal_message(self, message: str, websocket: WebSocket, page_number: int):
+        self.page_number = page_number
         await websocket.send_text(message)
 
     async def broadcast(self, message: str):

@@ -47,8 +47,16 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_json()
-            logs = await read_logs_from_files(data['start_date'], data['end_date'], data['per_page'], data['page_no'])
-            await manager.send_personal_message(logs, websocket)
+            manager.page_number += 1
+            logs = await read_logs_from_files(data['start_date'], data['end_date'],
+                                              data['per_page'], manager.page_number)
+
+            if len(logs) == 0:
+                await manager.send_personal_message(f"No logs found for {data['start_date']} - {data['end_date']}",
+                                                    websocket, manager.page_number)
+            else:
+                for log in logs:
+                    await manager.send_personal_message(log, websocket, manager.page_number)
 
     except WebSocketDisconnect:
         manager.disconnect(websocket)

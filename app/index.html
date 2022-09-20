@@ -36,29 +36,6 @@
             {{log}}
         </div>
     </div>
-
-
-    <div v-if="is_data_ready" style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
-
-        <button v-if="page_number>1" type="button" style="padding: 0.4rem; margin-right: 1rem;
-            align-content: center"
-            @click="loadMore(prev=true)">Previous
-        </button>
-
-        <button type="button" style="padding: 0.4rem; margin-right: 1rem;
-            align-content: center"
-            @click="loadMore(prev=false)">Next page
-        </button>
-
-        {{page_number}}
-
-    </div>
-
-    <div v-if="is_data_ready && logs.length===0" style="text-align: center; padding-bottom: 2rem; padding-top: 2rem ">
-        No records found for <b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b>
-    </div>
-
-
 </div>
 
 <script>
@@ -69,7 +46,6 @@
       return {
         message: 'Hello light logger!',
         connection: null,
-        page_number:1,
         per_page:50,
         logs:[],
         start_date:new Date(),
@@ -84,21 +60,27 @@
 
         let self = this
         self.connection.onmessage = function(event) {
-            const resp = JSON.parse(event.data)
-            self.logs = resp.logs
-            self.page_number = resp.page_no
-            self.per_page = resp.per_page
-            self.is_data_ready = true
+            // const resp = JSON.parse(event.data)
+            // self.page_number = resp.page_no
+            // self.per_page = resp.per_page
+
+            if(event){
+                self.logs.push(event.data)
+                self.is_data_ready = true
+            }
         }
 
-        this.connection.onopen = function(event) {
+        self.connection.onopen = function(event) {
           console.log(event)
           console.log("Successfully connected to the echo websocket server...")
         }
     },
 
-    methods:{
+    mounted(){
+        window.addEventListener('scroll', this.loadMore)
+    },
 
+    methods:{
         formattedDate:function(d){
             let date = new Date(d)
             let year = date.toLocaleDateString("default", { year: "numeric" });
@@ -112,35 +94,33 @@
                 start_date: this.formattedDate(this.start_date),
                 end_date: this.formattedDate(this.end_date),
                 per_page:50,
-                page_no:this.page_number
             }
             this.connection.send(JSON.stringify(data))
         },
 
-        loadMore: function (prev){
-            let page
-            if (prev===true){
-                page = this.page_number-1
-            }else{
-                page = this.page_number+1
+        loadMore: function (event){
+            if (this.is_data_ready){
+                let data = {
+                    start_date: this.formattedDate(this.start_date),
+                    end_date: this.formattedDate(this.end_date),
+                    per_page:50,
+                }
+                this.connection.send(JSON.stringify(data))
             }
-            let data = {
-                start_date: this.formattedDate(this.start_date),
-                end_date: this.formattedDate(this.end_date),
-                per_page:50,
-                page_no:page
-            }
-            this.connection.send(JSON.stringify(data))
         },
 
         resetFilters: function (){
             this.start_date=new Date()
             this.end_date = new Date()
-            this.page_number= 1
-            // this.connection.send(JSON.stringify(data))
+            this.logs=[]
+            this.is_data_ready = false
         },
 
-    }
+    },
+
+    destroyed () {
+        window.removeEventListener('scroll', this.loadMore);
+    },
 
 
   }).mount('#app')

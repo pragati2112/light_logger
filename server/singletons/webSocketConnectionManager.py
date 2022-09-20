@@ -4,7 +4,7 @@ from fastapi import WebSocket
 
 
 class ManageLogs:
-    def __init__(self, websocket=None, page_number=0):
+    def __init__(self, websocket: WebSocket = None, page_number: int = 0):
         self.websocket_dict = {
             'websocket': websocket,
             'page_number': page_number

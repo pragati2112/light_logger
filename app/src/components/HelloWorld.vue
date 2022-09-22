@@ -9,7 +9,7 @@
       </div>
     </section>
 
-    <section class="section" id="log">
+    <section class="section" id="log" ref="logContainer">
 
       <div class="has-text-centered pb-3">
           <div class="has-text-left">
@@ -28,7 +28,7 @@
           </div>
       </div>
 
-      <div v-if="logs.length>0 && is_data_ready" class="has-text-left">
+      <div v-if="logs.length>0 && is_data_ready"  class="has-text-left">
           <p>Logs for -
               <u><b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b></u>
               (Latest first)
@@ -49,6 +49,8 @@
 </template>
 
 <script>
+import {getCurrentInstance} from "vue";
+
 export default {
   name: 'HelloWorld',
   props: {
@@ -88,8 +90,9 @@ export default {
   },
 
   mounted(){
-      let element = document.getElementById('log')
+      // const doc = getCurrentInstance()
       let self = this
+      let element = self.$refs.logContainer
       element.addEventListener('scroll', self.loadMore);
   },
 
@@ -105,8 +108,8 @@ export default {
       fetchLogs: function (){
           this.logs=[]
           let data = {
-              start_date: this.formattedDate(this.start_date),
-              end_date: this.formattedDate(this.end_date),
+              start_date: '2022-09-07',
+              end_date: '2022-09-17',
               per_page:50,
           }
           this.connection.send(JSON.stringify(data))
@@ -115,11 +118,12 @@ export default {
 
       loadMore: function (){
           let element = document.getElementById('log')
+          console.log('hey load')
           if (element.scrollHeight - element.scrollTop === element.clientHeight){
             if (this.is_data_ready){
               let data = {
-                  start_date: this.formattedDate(this.start_date),
-                  end_date: this.formattedDate(this.end_date),
+                  start_date: '2022-09-07',
+                  end_date: '2022-09-17',
                   per_page:50,
               }
               this.connection.send(JSON.stringify(data))

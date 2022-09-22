@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "useDefineForClassFields": true,
+    "baseUrl": ".",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "jsx": "preserve",
+    "sourceMap": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "removeComments": true,
+    "importHelpers": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "lib": ["esnext", "dom"],
+    "types": [
+
+    ],
+    "paths": {
+      "/~/*": ["./src/assets/*"],
+      "/@src/*": ["./src/*"]
+    }
+  },
+  "include": [
+    "src/**/*.js",
+    "src/**/*.ts",
+    "src/**/*.d.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "documentation/**/*.md"
+  ],
+  //"exclude": ["bulma-colors.ts"]
+}

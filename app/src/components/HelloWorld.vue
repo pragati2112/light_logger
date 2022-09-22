@@ -93,7 +93,7 @@ export default {
       // const doc = getCurrentInstance()
       let self = this
       let element = self.$refs.logContainer
-      element.addEventListener('scroll', self.loadMore);
+      element.addEventListener('wheel', self.loadMore);
   },
 
   methods:{
@@ -108,8 +108,8 @@ export default {
       fetchLogs: function (){
           this.logs=[]
           let data = {
-              start_date: '2022-09-07',
-              end_date: '2022-09-17',
+              start_date: this.formattedDate(this.$data.start_date),
+              end_date: this.formattedDate(this.$data.end_date),
               per_page:50,
           }
           this.connection.send(JSON.stringify(data))
@@ -122,8 +122,8 @@ export default {
           if (element.scrollHeight - element.scrollTop === element.clientHeight){
             if (this.is_data_ready){
               let data = {
-                  start_date: '2022-09-07',
-                  end_date: '2022-09-17',
+                  start_date: this.formattedDate(this.$data.start_date),
+                  end_date: this.formattedDate(this.$data.end_date),
                   per_page:50,
               }
               this.connection.send(JSON.stringify(data))
@@ -143,7 +143,7 @@ export default {
 
   unmounted () {
       let element = document.getElementById('log')
-      element.removeEventListener('scroll', this.loadMore);
+      element.removeEventListener('wheel', this.loadMore);
   },
 
 }

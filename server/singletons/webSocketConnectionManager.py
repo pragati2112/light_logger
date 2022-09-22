@@ -3,10 +3,12 @@ from fastapi import WebSocket
 
 
 class ManageLogs:
-    def __init__(self, websocket: WebSocket = None, page_number: int = 0):
+    def __init__(self, websocket: WebSocket = None, page_number: int = 0, start_date: str = '', end_date: str = ''):
         self.websocket_dict = {
             'websocket': websocket,
-            'page_number': page_number
+            'page_number': page_number,
+            'last_start_date': start_date,
+            'last_end_date': end_date
         }
 
     def __getitem__(self, key):

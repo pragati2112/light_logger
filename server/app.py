@@ -51,8 +51,15 @@ async def websocket_endpoint(websocket: WebSocket):
                     conn['page_number'] += 1
 
                     data = await websocket.receive_json()
+
+                    if conn['last_start_date'] != data['start_date'] or conn['last_end_date'] != data['end_date']:
+                        conn['page_number'] = 1
+
                     logs = await read_logs_from_files(data['start_date'], data['end_date'],
                                                       data['per_page'], conn['page_number'])
+
+                    conn['last_start_date'] = data['start_date']
+                    conn['last_end_date'] = data['end_date']
                     for log in logs:
                         await manager.send_personal_message(log, conn)
 

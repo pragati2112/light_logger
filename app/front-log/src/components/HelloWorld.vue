@@ -1,20 +1,21 @@
 <template>
   <div class="hello ">
-    <section class="hero is-info ">
+    <section class="hero is-link ">
       <div class="hero-body">
         <h3 class="title">Light-logger</h3>
         <p class="subtitle">
           A light-weight log visualizer
         </p>
       </div>
+    </section>
 
+    <section class="section" id="log">
 
-      <div class="has-text-centered pb-2">
-          <button class="button is-small"
-              @click="fetchLogs">Show today's logs
-          </button>
+      <div class="has-text-centered pb-3">
+          <div class="has-text-left">
+            <button class="button is-small" @click="fetchLogs">Show today's logs</button>
+            &nbsp;
 
-          <div class="has-text-right mr-3">
             <input type="date" v-model="start_date" class="p-1" name="Start date">
 
             &nbsp;
@@ -23,17 +24,11 @@
             <button class="button is-primary is-small" @click="fetchLogs">Search</button>
 
             &nbsp;
-            <button class="button is-white is-small"
-                @click="resetFilters">Reset
-            </button>
+            <button class="button is-white is-small" @click="resetFilters">Reset</button>
           </div>
-
       </div>
 
-    </section>
-
-    <section class="section log-section" id="log">
-       <div v-if="logs.length>0 && is_data_ready" class="has-text-left">
+      <div v-if="logs.length>0 && is_data_ready" class="has-text-left">
           <p>Logs for -
               <u><b>{{new Date(start_date).toDateString()}} - {{new Date(end_date).toDateString()}}</b></u>
               (Latest first)
@@ -42,14 +37,14 @@
           <div  v-for="(log,idx) in logs" :key="idx" >
               <p class="pb-1">{{log}}</p>
           </div>
-      </div>
+       </div>
 
-      <div v-else>
-        No records yet
+      <div v-else-if="request_sent" class="mt-1">
+          <p>No records found in <b>{{new Date(start_date).toDateString()}} -
+            {{new Date(end_date).toDateString()}}</b></p>
       </div>
 
     </section>
-
   </div>
 </template>
 
@@ -68,7 +63,8 @@ export default {
         logs:[],
         start_date:new Date(),
         end_date:new Date(),
-        is_data_ready:false
+        is_data_ready:false,
+        request_sent:false
       }
     },
 
@@ -78,10 +74,6 @@ export default {
 
       let self = this
       self.connection.onmessage = function(event) {
-          // const resp = JSON.parse(event.data)
-          // self.page_number = resp.page_no
-          // self.per_page = resp.per_page
-
           if(event){
               self.logs.push(event.data)
               self.is_data_ready = true
@@ -90,22 +82,15 @@ export default {
 
       self.connection.onopen = function(event) {
         console.log(event)
+        self.fetchLogs()
         console.log("Successfully connected to the echo websocket server...")
       }
   },
 
   mounted(){
-      window.addEventListener('scroll', this.loadMore)
-
-      // let element = document.getElementById('log')
-      // element.addEventListener('scroll', function(event)
-      // {
-      //     let element = event.target;
-      //     if (element.scrollHeight - element.scrollTop === element.clientHeight)
-      //     {
-      //         // this.loadMore()
-      //     }
-      // });
+      let element = document.getElementById('log')
+      let self = this
+      element.addEventListener('scroll', self.loadMore);
   },
 
   methods:{
@@ -118,23 +103,27 @@ export default {
       },
 
       fetchLogs: function (){
+          this.logs=[]
           let data = {
               start_date: this.formattedDate(this.start_date),
               end_date: this.formattedDate(this.end_date),
               per_page:50,
           }
           this.connection.send(JSON.stringify(data))
+          this.$data.request_sent = true
       },
 
       loadMore: function (){
-          if (this.is_data_ready){
-              console.log('******')
+          let element = document.getElementById('log')
+          if (element.scrollHeight - element.scrollTop === element.clientHeight){
+            if (this.is_data_ready){
               let data = {
                   start_date: this.formattedDate(this.start_date),
                   end_date: this.formattedDate(this.end_date),
                   per_page:50,
               }
               this.connection.send(JSON.stringify(data))
+            }
           }
       },
 
@@ -143,14 +132,14 @@ export default {
           this.end_date = new Date()
           this.logs=[]
           this.is_data_ready = false
+          this.$data.request_sent = false
       },
 
   },
 
   unmounted () {
-      // let element = document.getElementById('log')
-      // element.removeEventListener('scroll', this.loadMore);
-      window.removeEventListener('scroll', this.loadMore)
+      let element = document.getElementById('log')
+      element.removeEventListener('scroll', this.loadMore);
   },
 
 }

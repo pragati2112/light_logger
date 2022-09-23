@@ -3,9 +3,11 @@
 </script>
 
 <template>
-  <router-view v-slot="{ Component }">
-    <component :is="Component" />
-  </router-view>
+  <w-app>
+    <router-view v-slot="{ Component }">
+      <component :is="Component" />
+    </router-view>
+  </w-app>
 </template>
 
 <style>
